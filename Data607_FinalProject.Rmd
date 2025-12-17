@@ -19,7 +19,7 @@ library(igraph)
 library(ggraph)
 library(ggcorrplot)
 library(kableExtra)
-library(gridExtra)
+library(stargazer)
 ```
 
 ## Introduction
@@ -291,7 +291,7 @@ ggplot(hmovies_df2, aes(x = Metascore)) +
   geom_histogram(bins=50,fill = "blue", color ="white")+
   labs(
     title = "Distribution of Popular Horror Metasores",
-    x = "Box Office Revenue (in Millions)",
+    x = "Metascores",
     y = "Count"
   )+
   theme_gray()
@@ -301,7 +301,7 @@ ggplot(hmovies_df2, aes(x = Rating)) +
   geom_histogram(bins=50,fill = "yellow4")+
   labs(
     title = "Distribution of Popular Horror IMDB Ratings",
-    x = "Box Office Revenue (in Millions)",
+    x = "IMDB Rating",
     y = "Count"
   )+
   theme_minimal()
@@ -312,7 +312,7 @@ ggplot(hmovies_df2, aes(x = Runtime)) +
   geom_histogram(bins=50,fill = "purple3")+
   labs(
     title = "Distribution of Popular Horror Runtimes",
-    x = "Box Office Revenue (in Millions)",
+    x = "Runtime (in Minutes)",
     y = "Count"
   )+
   theme_minimal()
@@ -322,7 +322,7 @@ ggplot(hmovies_df2, aes(x = Votes)) +
   geom_histogram(bins=50, fill = "chocolate")+
   labs(
     title = "Distribution of Popular Horror IMDB User Votes",
-    x = "Box Office Revenue (in Millions)",
+    x = "IMDB Votes",
     y = "Count"
   )+
   theme_minimal()
@@ -436,10 +436,9 @@ hmovies_df2$Released <- dmy(hmovies_df2$Released)
 class(hmovies_df2$Released)
 
 ggplot(hmovies_df2, aes(x=Rated, y=Box_Office_Millions, fill = Rated)) + 
-  geom_boxplot(#notch=TRUE, # Make a notched boxplot
-               na.rm = TRUE,
-               outlier.colour="red", # Change colour of outliers
-               outlier.shape = 3 # Change shape of outliers
+  geom_boxplot(na.rm = TRUE,
+               outlier.colour="red", 
+               outlier.shape = 3 
   ) +
   labs( 
     title = "Box Office Revenue by Movie Ratings",
@@ -451,7 +450,7 @@ ggplot(hmovies_df2, aes(x=Rated, y=Box_Office_Millions, fill = Rated)) +
 
 ### Box Office Over Time
 
-Let us take a look at box office revenue for the horror movies in our dataset.
+Let us take a look at box office revenue over the time for the horror movies in our dataset.
 
 ```{r time series plt, warning=FALSE}
 #arranging the Year column in chronological order
@@ -613,7 +612,7 @@ country_df <- hmovies_df2 %>%
 
 ```
 
-We can see that the countries with the highest average box office revenue are the United States, the U.K., Canada, France and Germany, they are also the countries with highest number of movies produced.
+We can see that the countries with the highest average box office revenue are Japan, the U.K., Australia, the United States and Mexico. However only the U.S, and the U.K, are top produders of horror movies when we look at the number of movies produced.
 
 ### Country Collaborations
 
@@ -743,7 +742,7 @@ actors_df %>%
 ```
 
 
-**We can see that the actors with the highest average box office revenue are Vera Farminga and Patrick Wilson. This makes sense since James Wan is the director associated with the second highest average box office revenue for horror movie in our dataset, and Vera Farminga and Patrick Wilson are the stars of the very popular Conjuring series.**
+**A small number of directors, actors  and writers are associated with consistent higher average box office revenue. For example:  James Wan is the director associated with the second highest average box office revenue for horror movie in our dataset, and Vera Farminga and Patrick Wilson are the stars of the very popular Conjuring series directed by him, and Chad and Corey Hayes are the writers behind the series.**
 
 
 ## Popular Horror Movies By Subgenre
@@ -817,6 +816,15 @@ ggplot(heatmap_subg, aes(x = Month_Released, y = Genre, fill = avg_box)) +
 
 ```
 
+**Adventure and Action Horror movies have the highest earnings June; in Sci-fi movies have the highest earning in December and Mystery andThriller movies see the highest earning in July**
+
+
+## Productions and Release Insights
+
+***Which production, release, and audience factors are associated with higher box office performance for popular horror movies?*** 
+
+Box office performance among popular (on IMDB) horror movies is associated with a combination of production strategies, release timing, and content characteristics rather than any single factor. Movies produced in countries with established film industries like Japan, the United Kingdom and the United States, tend to achieve on average, higher revenues, as do films associated with a small group of repeatedly successful directors and actors. Release timing also plays an important role, with revenues peaking during seasonally appropriate months such as June, October and December. Content-wise, certain subgenres (e.g., adventure, sci-fi , mystery) have higher average box office than others and are especially profitable when released during certain seasons. Overall, higher box office performance is associated with strategic production choices, seasonal release timing, and broad audience appeal.
+
 
 ### Numerical Variables vs Box Office Correalation
 
@@ -837,6 +845,8 @@ ggcorrplot(cor_matrix, lab = TRUE,
 
 ```
 
+IMDB Rating has a high positive correlation with all other numerical factors in our dataset. As  IMDB Rating increases so do all the rest.
+
 
 ```{r box office cors, warning=FALSE}
 
@@ -850,6 +860,9 @@ ggcorrplot(cor_with_box, lab = TRUE,
            title = "Correlations Among Box Office and Numeric Predictors")
 
 ```
+
+There is a positive correlation between Box Office and IMDB Votes, Ratins and Metascore. The correlation is low between Box Office and Runtime.
+
 
 ### Creating linear models for our numerical predictors
 
@@ -869,7 +882,7 @@ plot(model,5)
 
 Attempting to build a regression model with votes as the predictor fails though there is a high postive correlation between them because the underlying relationship is reversed: box office revenue influences the number of votes a movie receives, and not the other way around. This violates the assumptions of a predictive model.
 
-This insight is still useful just not for our putpose. We have come to see that movies that earn higher revenue tend to attract more votes, which reflects audience engagement and popularity, we were lookign at popular horror movie on IMDB after all. However, votes cannot be used to reliably predict revenue.
+This insight is still useful just not for our purpose. We have come to see that movies that earn higher revenue tend to attract more votes, which reflects audience engagement and popularity, we were looking at popular horror movie on IMDB after all. However, votes cannot be used to reliably predict revenue.
 
 Linear Regression Model for Box Office and IMDB Ratings
 
@@ -886,6 +899,9 @@ plot(model2,5)
 
 ```
 
+Similarly, attempting to build a regression model with IMDB ratings as the predictor fails even though there is a high positive correlation between them because the underlying relationship is reversed: box office revenue influences the number of votes a movie receives, and not the other way around. This violates the assumptions of a predictive model.
+
+
 Linear Regression Model for Box Office and Metascores
 
 ```{r lms 3}
@@ -901,7 +917,7 @@ plot(model3,5)
 ```
 
 
-Attempting to build a regression model with metascores as the predictor fails though they a not insignificant, postive correalation because the underlying relationship is reversed: box office revenue influences the number of metascore ratings a movie receives, and not the other way around. This violates the assumptions of a predictive model.
+Attempting to build a regression model with metascores as the predictor fails though they a not insignificant, poistive correlation because the underlying relationship is reversed: box office revenue influences the number of metascore ratings a movie receives, and not the other way around. This violates the assumptions of a predictive model.
 
 
 Linear Regression Model for Box Office and Runtime
@@ -919,7 +935,31 @@ plot(model4,5)
 
 ```
 
+```{r stargazer, results='asis'}
+stargazer(model4, type = "html", title = "Linear Regression Results: Runtime Model",
+          align = TRUE, dep.var.labels = "Box Office Revenue",
+          covariate.labels = "Runtime") 
+
+```
+
+
 While the diagnostic linear model for runtime vs box office look better than the rest, our residuals do not look normal, and we must remember that these two variable have an extremely low negative correalation.
 
 The linear model for runtime and box office produces some good diagnostic plots, even if all the diagnostic plots were perfect — residuals approximately normal, constant variance, and there were no influential outliers. The correlation between runtime and box office is extremely low, near zero, which indicates that runtime explains almost none of the variability in revenue. While the model is statistically valid, it is not useful for prediction.
+
+
+## Numerical Factors Insights
+
+
+***Which numeric features of a horror movie — runtime, metascores, IMDB rating, or votes — can reliably predict its Box Office performance?*** 
+
+Attempting to build a regression model with any of our numerical predictors—IMDB votes, IMDB ratings, metascores or runtime—as the predictor fails.  
+
+This insight is still useful just not for our purpose. We have come to see that movies that earn higher revenue tend to attract more votes, which reflects audience engagement and popularity.
+
+We have also seen that due to the low correlation between runtime and box office revenue, our model provides very little insight into the variation of revenue.
+
+We must focus more of our attention on production and release features to understand what appeals most to horror movies audiences and what combination of features will produce more financially successful horror movies.
+
+Some limitations of working with this data is that it is quite a small number of horror movies when compared to how many are listed on IMDB. 
 
